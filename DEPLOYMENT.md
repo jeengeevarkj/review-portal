@@ -103,5 +103,9 @@ If the build succeeds but deployment fails, it means the application failed to s
     -   Check `DATABASE_URL`. It should look like: `postgresql://postgres:PASSWORD@...us-east-1.rds.amazonaws.com:5432/postgres`
     -   Ensure there are no spaces or typos.
 
-### Web ACL Error
-If you see "Error while retrieving Web ACL...", ignore it for now. This is often a permissions warning in the console and does not prevent the application from running. Focus on the **Application Logs** first.
+### Deployment Hanging (Health Check Timeout)
+If the deployment sits at "Performing health check" for 10+ minutes and then fails:
+1.  **Cause**: The application is running but not accessible by App Runner. This usually means it's listening on `localhost` (127.0.0.1) instead of `0.0.0.0`.
+2.  **Fix**: Ensure your start command includes `HOSTNAME=0.0.0.0`.
+    -   Example: `HOSTNAME=0.0.0.0 node .next/standalone/server.js`
+3.  **Aborting**: You cannot manually abort a deployment in this phase. You must wait for it to time out (fail), which takes about 15 minutes.

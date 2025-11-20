@@ -10,7 +10,7 @@
     "build:deploy": "prisma generate && next build",
     "start:deploy": "prisma db push && next start",
     "build:apprunner": "echo '--- STARTING BUILD ---' && echo 'Running npm ci...' && npm ci && echo 'Running prisma generate...' && npx prisma generate && echo 'Running next build...' && next build && echo '--- BUILD COMPLETE ---'",
-    "start:apprunner": "npx prisma db push && node .next/standalone/server.js"
+    "start:apprunner": "npx prisma db push && HOSTNAME=0.0.0.0 node .next/standalone/server.js"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
