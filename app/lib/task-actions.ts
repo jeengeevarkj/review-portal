@@ -5,6 +5,7 @@ import { PrismaClient, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { logAudit } from "@/lib/audit";
 
 const prisma = new PrismaClient();
 
@@ -34,12 +35,22 @@ export async function createTask(prevState: any, formData: FormData) {
     const { title, description } = validatedFields.data;
 
     try {
-        await prisma.task.create({
+        const task = await prisma.task.create({
             data: {
                 data: { title, description },
                 status: TaskStatus.PENDING,
             },
         });
+
+        if (session.user?.id) {
+            await logAudit({
+                action: "TASK_CREATED",
+                entity: "Task",
+                entityId: task.id,
+                userId: session.user.id,
+                details: { title, description },
+            });
+        }
     } catch (error) {
         return { message: "Database Error: Failed to Create Task.", errors: {} };
     }
@@ -65,6 +76,16 @@ export async function updateTaskStatus(taskId: string, status: TaskStatus) {
             where: { id: taskId },
             data: { status },
         });
+
+        if (session.user?.id) {
+            await logAudit({
+                action: "TASK_UPDATED",
+                entity: "Task",
+                entityId: taskId,
+                userId: session.user.id,
+                details: { status },
+            });
+        }
     } catch (error) {
         return { message: "Database Error: Failed to Update Task." };
     }
@@ -90,12 +111,20 @@ export async function addComment(taskId: string, content: string) {
 
         if (!user) return { message: "User not found" };
 
-        await prisma.comment.create({
+        const comment = await prisma.comment.create({
             data: {
                 content,
                 taskId,
                 userId: user.id,
             },
+        });
+
+        await logAudit({
+            action: "COMMENT_ADDED",
+            entity: "Comment",
+            entityId: comment.id,
+            userId: user.id,
+            details: { content, taskId },
         });
         revalidatePath(`/dashboard/tasks/${taskId}`);
         return { message: "Success" };
@@ -115,6 +144,16 @@ export async function assignTask(taskId: string, assigneeId: string) {
             where: { id: taskId },
             data: { assigneeId },
         });
+
+        if (session.user?.id) {
+            await logAudit({
+                action: "TASK_ASSIGNED",
+                entity: "Task",
+                entityId: taskId,
+                userId: session.user.id,
+                details: { assigneeId },
+            });
+        }
         revalidatePath(`/dashboard/tasks/${taskId}`);
         revalidatePath("/dashboard/tasks");
         return { message: "Success" };
@@ -153,6 +192,15 @@ export async function deleteTask(taskId: string) {
         await prisma.task.delete({
             where: { id: taskId },
         });
+
+        if (session.user?.id) {
+            await logAudit({
+                action: "TASK_DELETED",
+                entity: "Task",
+                entityId: taskId,
+                userId: session.user.id,
+            });
+        }
         revalidatePath("/dashboard/tasks");
         return { message: "Success" };
     } catch (error) {

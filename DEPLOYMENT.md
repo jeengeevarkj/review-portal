@@ -1,0 +1,80 @@
+# Deployment Guide: AWS App Runner + RDS (Enterprise Secure)
+
+This guide outlines how to deploy your Next.js application using **AWS App Runner** (Manual Configuration) and **AWS RDS**.
+
+## Prerequisites
+- An AWS Account.
+- A GitHub repository with your code pushed.
+
+---
+
+## Step 1: Provision Infrastructure (Automated)
+
+We will use CloudFormation to create a secure VPC, a private RDS PostgreSQL database, and a **VPC Connector**.
+
+> **Note**: If you have already updated the stack to include the VPC Connector, you can skip this step.
+
+1.  **Log in to AWS Console** and search for **CloudFormation**.
+2.  Click **Create stack** -> **With new resources (standard)**.
+3.  **Template source**: Upload a template file.
+4.  Upload the `cloudformation.yaml` file from this project.
+5.  **Specify stack details**:
+    -   **Stack name**: `review-portal-infra`.
+    -   **DbUsername**: `postgres`.
+    -   **DbPassword**: Enter a strong password.
+    -   **EnvironmentName**: `dev`.
+6.  Click **Next** through the options and **Submit**.
+7.  **Wait** for the stack status to reach `CREATE_COMPLETE`.
+8.  Go to the **Outputs** tab and note down:
+    -   `DBEndpoint`
+    -   `VpcConnectorArn`
+
+---
+
+## Step 2: Deploy the Application (AWS App Runner)
+
+1.  Search for **AWS App Runner** in the AWS Console.
+2.  Click **Create an App Runner service**.
+3.  **Source**:
+    -   **Repository type**: Source code repository.
+    -   **Provider**: GitHub.
+    -   **Repository**: Select your repo and branch.
+    -   **Deployment settings**: Automatic (recommended).
+4.  **Configure build**:
+    -   **Configuration file**: Select **Configure all settings here**.
+    -   **Runtime**: Node.js 18.
+    -   **Build command**:
+        ```bash
+        npm ci && npm run build:deploy
+        ```
+    -   **Start command**:
+        ```bash
+        npm run start:deploy
+        ```
+    -   **Port**: `3000`.
+5.  Click **Next**.
+
+---
+
+## Step 3: Configure Service Settings
+
+1.  **Service name**: `review-portal-app`.
+2.  **Environment variables** (Add these):
+    -   `DATABASE_URL`: `postgresql://<DbUsername>:<DbPassword>@<DBEndpoint>:5432/postgres`
+    -   `NEXTAUTH_SECRET`: Generate a random string.
+    -   `NEXTAUTH_URL`: Leave blank for now.
+3.  **Networking** (Crucial Step):
+    -   **Incoming network traffic**: Public endpoint.
+    -   **Outgoing network traffic**: Select **Custom VPC**.
+    -   **VPC Connector**: Select the connector created by CloudFormation (`...-review-portal-connector`).
+4.  Click **Next** and then **Create & deploy**.
+
+---
+
+## Step 4: Finalize Configuration
+
+1.  Wait for the service to reach **Running** status.
+2.  Copy the **Default domain** URL.
+3.  Go to the **Configuration** tab -> **Environment variables**.
+4.  Update `NEXTAUTH_URL` to your new App Runner domain.
+5.  Click **Save changes**.

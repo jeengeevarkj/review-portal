@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Secure Infrastructure for Review Portal: VPC + Private RDS PostgreSQL'
+
+Parameters:
+  DbUsername:
+    Type: String
+    Description: Master username for the RDS database
+    Default: postgres
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+  DbPassword:
+    Type: String
+    Description: Master password for the RDS database
+    NoEcho: true
+    MinLength: 8
+    MaxLength: 41
+  EnvironmentName:
+    Type: String
+    Description: Environment name (e.g., dev, prod)
+    Default: dev
+
+Resources:
+  # ---------------------------------------------------------------------------
+  # VPC & Networking
+  # ---------------------------------------------------------------------------
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-review-portal-vpc
+        - Key: Project
+          Value: review-portal
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-private-subnet-1
+        - Key: Project
+          Value: review-portal
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-private-subnet-2
+        - Key: Project
+          Value: review-portal
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      Tags:
+        - Key: Project
+          Value: review-portal
+
+  # ---------------------------------------------------------------------------
+  # Security Groups
+  # ---------------------------------------------------------------------------
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow database access from within the VPC
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.0.0/16 # Allow traffic from anywhere inside the VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-rds-sg
+        - Key: Project
+          Value: review-portal
+
+  # ---------------------------------------------------------------------------
+  # RDS Instance
+  # ---------------------------------------------------------------------------
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub ${EnvironmentName}-review-portal-db
+      Engine: postgres
+      EngineVersion: '15' # Use a supported version
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      StorageType: gp3
+      MasterUsername: !Ref DbUsername
+      MasterUserPassword: !Ref DbPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      BackupRetentionPeriod: 7
+      MultiAZ: false # Set to true for production HA
+      DeletionProtection: false # Set to true for production
+      Tags:
+        - Key: Project
+          Value: review-portal
+
+  # ---------------------------------------------------------------------------
+  # App Runner VPC Connector
+  # ---------------------------------------------------------------------------
+  AppRunnerVpcConnector:
+    Type: AWS::AppRunner::VpcConnector
+    Properties:
+      VpcConnectorName: !Sub ${EnvironmentName}-review-portal-connector
+      Subnets:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      SecurityGroups:
+        - !Ref DBSecurityGroup
+      Tags:
+        - Key: Project
+          Value: review-portal
+
+Outputs:
+  DBEndpoint:
+    Description: The connection endpoint for the database
+    Value: !GetAtt DBInstance.Endpoint.Address
+  DBPort:
+    Description: The port for the database
+    Value: !GetAtt DBInstance.Endpoint.Port
+  VPCId:
+    Description: The ID of the VPC
+    Value: !Ref VPC
+  SecurityGroupId:
+    Description: The ID of the Security Group
+    Value: !Ref DBSecurityGroup
+  VpcConnectorArn:
+    Description: The ARN of the App Runner VPC Connector
+    Value: !Ref AppRunnerVpcConnector
+  PrivateSubnet1:
+    Description: Private Subnet 1 ID
+    Value: !Ref PrivateSubnet1
+  PrivateSubnet2:
+    Description: Private Subnet 2 ID
+    Value: !Ref PrivateSubnet2

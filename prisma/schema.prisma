@@ -17,6 +17,7 @@ model User {
   updatedAt DateTime  @updatedAt
   comments  Comment[]
   tasks     Task[]    @relation("AssignedTasks")
+  auditLogs AuditLog[]
 }
 
 model Task {
@@ -51,4 +52,15 @@ enum TaskStatus {
   IN_PROGRESS
   APPROVED
   REJECTED
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String   // e.g., "Task", "Comment"
+  entityId  String
+  details   Json?    // Store changed fields or other metadata
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
