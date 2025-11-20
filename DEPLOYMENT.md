@@ -42,14 +42,14 @@ We will use CloudFormation to create a secure VPC, a private RDS PostgreSQL data
     -   **Deployment settings**: Automatic (recommended).
 4.  **Configure build**:
     -   **Configuration file**: Select **Configure all settings here**.
-    -   **Runtime**: Node.js 18.
+    -   **Runtime**: Node.js 20.
     -   **Build command**:
         ```bash
         npm run build:apprunner
         ```
     -   **Start command**:
         ```bash
-        npm run start:deploy
+        npm run start:apprunner
         ```
     -   **Port**: `3000`.
 5.  Click **Next**.
@@ -78,3 +78,30 @@ We will use CloudFormation to create a secure VPC, a private RDS PostgreSQL data
 3.  Go to the **Configuration** tab -> **Environment variables**.
 4.  Update `NEXTAUTH_URL` to your new App Runner domain.
 5.  Click **Save changes**.
+
+---
+
+## Troubleshooting
+
+### Deployment Failed (after successful build)
+If the build succeeds but deployment fails, it means the application failed to start. This is usually due to **Database Connectivity**.
+
+1.  **Check Application Logs**:
+    -   Go to your App Runner service dashboard.
+    -   Click the **Logs** tab (usually between "Metrics" and "Configuration").
+    -   In the "Log groups" section, you will see **Event logs** and **Deployment logs**.
+    -   **Crucial**: Look for a section called **Application logs** or **Service logs**. You might need to click a link that says "View in CloudWatch" if the console view is truncated.
+    -   If you see `Error: P1001: Can't reach database server`, it means the App Runner service cannot connect to RDS.
+
+2.  **Verify VPC Connector**:
+    -   Go to **Configuration** tab -> **Networking**.
+    -   Ensure **Outgoing network traffic** is set to **Custom VPC**.
+    -   Ensure the **VPC Connector** is selected.
+
+3.  **Verify Environment Variables**:
+    -   Go to **Configuration** tab -> **Environment variables**.
+    -   Check `DATABASE_URL`. It should look like: `postgresql://postgres:PASSWORD@...us-east-1.rds.amazonaws.com:5432/postgres`
+    -   Ensure there are no spaces or typos.
+
+### Web ACL Error
+If you see "Error while retrieving Web ACL...", ignore it for now. This is often a permissions warning in the console and does not prevent the application from running. Focus on the **Application Logs** first.
