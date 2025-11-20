@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "build:deploy": "prisma generate && next build",
-    "start:deploy": "prisma db push && next start"
+    "start:deploy": "prisma db push && next start",
+    "build:apprunner": "npm ci && npm run build:deploy"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

@@ -45,7 +45,7 @@ We will use CloudFormation to create a secure VPC, a private RDS PostgreSQL data
     -   **Runtime**: Node.js 18.
     -   **Build command**:
         ```bash
-        npm ci && npm run build:deploy
+        npm run build:apprunner
         ```
     -   **Start command**:
         ```bash
