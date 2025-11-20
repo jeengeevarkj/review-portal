@@ -76,8 +76,10 @@ We will use CloudFormation to create a secure VPC, a private RDS PostgreSQL data
 1.  Wait for the service to reach **Running** status.
 2.  Copy the **Default domain** URL.
 3.  Go to the **Configuration** tab -> **Environment variables**.
-4.  Update `NEXTAUTH_URL` to your new App Runner domain.
-5.  Click **Save changes**.
+4.  **Update NEXTAUTH_URL**:
+    -   Copy the **Default domain** from the Service Overview (e.g., `https://xyz.us-east-1.awsapprunner.com`).
+    -   Paste it into the `NEXTAUTH_URL` value. **Ensure it starts with `https://` and has NO trailing slash.**
+5.  Click **Save changes**. The service will re-deploy with the new configuration.
 
 ---
 
