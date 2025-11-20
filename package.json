@@ -9,7 +9,7 @@
     "lint": "eslint",
     "build:deploy": "prisma generate && next build",
     "start:deploy": "prisma db push && next start",
-    "build:apprunner": "npm ci && npm run build:deploy"
+    "build:apprunner": "echo '--- STARTING BUILD ---' && echo 'Running npm ci...' && npm ci && echo 'Running prisma generate...' && npx prisma generate && echo 'Running next build...' && next build && echo '--- BUILD COMPLETE ---'"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
