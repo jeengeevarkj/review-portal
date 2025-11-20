@@ -1,4 +1,5 @@
-import { PrismaClient, TaskStatus } from "@prisma/client";
+import { TaskStatus } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { updateTaskStatus, addComment, getReviewers } from "@/app/lib/task-actions";
 import { notFound } from "next/navigation";
@@ -6,7 +7,7 @@ import TaskReviewButtons from "@/app/ui/dashboard/task-review-buttons";
 import TaskAssignment from "@/app/ui/dashboard/task-assignment";
 import DeleteTaskButton from "@/app/ui/dashboard/delete-task-button";
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
 
 export default async function TaskDetailsPage({
     params,

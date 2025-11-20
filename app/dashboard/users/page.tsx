@@ -4,6 +4,8 @@ import DeleteUserButton from "@/app/ui/dashboard/delete-user-button";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export default async function UsersPage() {
     const session = await auth();
     if (session?.user?.role !== "ADMIN") {

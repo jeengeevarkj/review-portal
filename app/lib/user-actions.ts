@@ -1,13 +1,11 @@
 "use server";
 
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
 
 const CreateUserSchema = z.object({
     name: z.string().min(1, "Name is required"),

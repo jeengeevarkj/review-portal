@@ -1,9 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { auth } from "@/auth";
 import TaskList from "@/app/ui/dashboard/task-list";
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
 
 export default async function TaskListPage() {
     const session = await auth();
