@@ -9,7 +9,7 @@
     "lint": "eslint",
     "build:deploy": "prisma generate && next build",
     "start:deploy": "prisma db push && next start",
-    "build:apprunner": "echo '--- STARTING BUILD ---' && echo 'Running npm ci...' && npm ci && echo 'Running prisma generate...' && npx prisma generate && echo 'Running next build...' && next build && echo 'Copying static assets...' && cp -r public .next/standalone/ && mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/ && echo '--- BUILD COMPLETE ---'",
+    "build:apprunner": "echo '--- STARTING BUILD ---' && echo 'Running npm ci...' && npm ci && echo 'Running prisma generate...' && npx prisma generate && echo 'Running next build...' && next build && echo 'Copying static assets...' && mkdir -p .next/standalone/public && cp -r public/* .next/standalone/public/ && mkdir -p .next/standalone/.next/static && cp -r .next/static/* .next/standalone/.next/static/ && echo '--- LISTING STANDALONE DIR ---' && ls -R .next/standalone && echo '--- BUILD COMPLETE ---'",
     "start:apprunner": "npx prisma db push && cd .next/standalone && HOSTNAME=0.0.0.0 node server.js"
   },
   "dependencies": {
