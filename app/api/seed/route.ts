@@ -24,23 +24,23 @@ export async function GET() {
             },
         });
 
-        // Create Manager
+        // Create Manager (Reviewer)
         await prisma.user.create({
             data: {
                 email: "manager@example.com",
                 name: "Manager User",
                 password: hashedPassword,
-                role: "MANAGER",
+                role: "REVIEWER",
             },
         });
 
-        // Create Employee
+        // Create Employee (Viewer)
         await prisma.user.create({
             data: {
                 email: "employee@example.com",
                 name: "Employee User",
                 password: hashedPassword,
-                role: "EMPLOYEE",
+                role: "VIEWER",
             },
         });
 
