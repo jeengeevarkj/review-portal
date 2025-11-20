@@ -62,7 +62,8 @@ We will use CloudFormation to create a secure VPC, a private RDS PostgreSQL data
 2.  **Environment variables** (Add these):
     -   `DATABASE_URL`: `postgresql://<DbUsername>:<DbPassword>@<DBEndpoint>:5432/postgres`
     -   `NEXTAUTH_SECRET`: Generate a random string.
-    -   `NEXTAUTH_URL`: Leave blank for now.
+    -   `NEXTAUTH_URL`: Leave blank for now (update after deployment).
+    -   `AUTH_TRUST_HOST`: `true` (Required for App Runner/NextAuth v5).
 3.  **Networking** (Crucial Step):
     -   **Incoming network traffic**: Public endpoint.
     -   **Outgoing network traffic**: Select **Custom VPC**.
