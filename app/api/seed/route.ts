@@ -47,6 +47,9 @@ export async function GET() {
         return NextResponse.json({ message: "Database seeded successfully!" });
     } catch (error) {
         console.error("Seeding error:", error);
-        return NextResponse.json({ error: "Failed to seed database" }, { status: 500 });
+        return NextResponse.json({
+            error: "Failed to seed database",
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
