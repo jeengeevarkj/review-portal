@@ -16,7 +16,7 @@ export default function TaskReviewButtons({ taskId }: { taskId: string }) {
     };
 
     return (
-        <div className="flex flex-col items-end space-y-2">
+        <div className="flex flex-col space-y-2">
             <div className="flex space-x-3">
                 <button
                     onClick={() => handleAction(TaskStatus.APPROVED)}

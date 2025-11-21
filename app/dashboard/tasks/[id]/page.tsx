@@ -41,13 +41,21 @@ export default async function TaskDetailsPage({
             {/* Task Header */}
             <div className="bg-white shadow rounded-lg p-6">
                 <div className="flex justify-between items-start">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Status: <span className="font-medium">{task.status}</span>
-                        </p>
+                    <div className="space-y-4">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Status: <span className="font-medium">{task.status}</span>
+                            </p>
+                        </div>
+
+                        {/* Review Buttons - Moved here for better visibility */}
+                        {task.assigneeId === session?.user?.id && (
+                            <TaskReviewButtons taskId={task.id} />
+                        )}
                     </div>
-                    {/* Assignment & Reviewer Actions */}
+
+                    {/* Assignment Actions */}
                     <div className="flex flex-col items-end space-y-2">
                         {(session?.user?.role === "REVIEWER" || session?.user?.role === "ADMIN") && (
                             <TaskAssignment
@@ -56,16 +64,6 @@ export default async function TaskDetailsPage({
                                 currentUserId={session.user.id!}
                                 reviewers={reviewers}
                             />
-                        )}
-
-                        {/* Only show review buttons if assigned to current user */}
-                        {task.assigneeId === session?.user?.id && (
-                            <TaskReviewButtons taskId={task.id} />
-                        )}
-
-                        {/* Delete Button (Admin Only) */}
-                        {session?.user?.role === "ADMIN" && (
-                            <DeleteTaskButton taskId={task.id} />
                         )}
                     </div>
                 </div>
@@ -155,6 +153,21 @@ export default async function TaskDetailsPage({
                     </div>
                 </form>
             </div>
+
+            {/* Danger Zone - Admin Only */}
+            {session?.user?.role === "ADMIN" && (
+                <div className="bg-red-50 shadow rounded-lg p-6 border border-red-100">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h3 className="text-lg font-medium text-red-900">Danger Zone</h3>
+                            <p className="mt-1 text-sm text-red-600">
+                                Irreversible actions for this task.
+                            </p>
+                        </div>
+                        <DeleteTaskButton taskId={task.id} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
